@@ -40,18 +40,24 @@ longnow = time_command(name='longnow', description='Shows the current date and t
 async def get_timezones(interaction, current, namespace):
     options = set(AVAILABLE_TIMEZONES)
 
-    # first we want to do the classic autocomplete thing of simply checking that the user starts with the correct letters
-    starts_with = {zone for zone in AVAILABLE_TIMEZONES if zone.lower().startswith(current.lower())}
-
-    # then for the remaining items perform a fuzzy match
+    # Perform a fuzzy match for what the user might want
     close_match = difflib.get_close_matches(
         word=current,
-        possibilities=options - starts_with,
-        cutoff=0.4,
-        n=(25 - len(starts_with)),
+        possibilities=options,
+        cutoff=0.6,
+        n=25,
     )
 
-    view_order = sorted(starts_with) + close_match
+
+    # then do the classic autocomplete thing of simply checking that the user starts with the correct letters
+    starts_with = [
+        zone for zone in options.difference(close_match)
+        if zone.lower().startswith(current.lower())
+    ]
+
+    # we want to limit our maximum to 25 responses and value close matches more
+    cutoff_point = 25 - len(close_match)
+    view_order = starts_with[:cutoff_point] + close_match
 
     return [
         slash.Choice(name=name, value=AVAILABLE_TIMEZONES[name])
