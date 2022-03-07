@@ -22,6 +22,9 @@ tree = slash.CommandTree(client)
 def time_command(time_format, **kwargs):
 
     async def reply(interaction, timezone: Optional[str] = None):
+        if timezone not in AVAILABLE_TIMEZONES and timezone is not None:
+            return await interaction.response.send_message(f'{timezone} is not a valid timezone. Please pick one from the list.', ephemeral=True)
+
         timezone = zoneinfo.ZoneInfo('Europe/Helsinki') if timezone is None else zoneinfo.ZoneInfo(timezone)
         now = datetime.datetime.now(tz=timezone)
 
